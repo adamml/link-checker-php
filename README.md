@@ -12,6 +12,9 @@ This code is made available under the Unlicense.
 
 ## Class: `CheckedURLs`
 
+A class to handle checking all `<a href="..." />` in a website.
+
+
 ### Method: `addURL(int $responseCode, String $hostUrl, String $targetURL)`
 
 ### Method: `array[[int], [String], [String]] getCheckedURLs()`
