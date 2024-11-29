@@ -3,7 +3,7 @@
  * This file provides a Command Line Interface to the CheckedUrls class
  */
 
-require('CheckedUrls/CheckedUrls.php');
+require('CheckedURLs/CheckedURLs.php');
 
 $smap = NULL;
 foreach($argv as $arg){
@@ -14,7 +14,7 @@ foreach($argv as $arg){
     };
 }
 if($smap != NULL){
-    $tested = CheckedURLs::linkExtract($smap, new CheckedURLs());
+    $tested = CheckedURLs::linkChecker($smap, new CheckedURLs());
     print($tested);
 } else {
     throw new Exception(

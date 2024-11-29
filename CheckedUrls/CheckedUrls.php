@@ -13,8 +13,7 @@
  * 
  * @method addURL($responseCode, $hostURL, $targetURL)
  * @method getCheckedURLs()
- * @method getTestedResponse($targetURL)
- * @method isURLChecked($targetURL)
+ * @method getHTTPResponse($targetURL)
  * @static linkChecker($sitemap, $tested)
  */
 class CheckedURLs {
@@ -48,14 +47,15 @@ class CheckedURLs {
             if($thisTargetUrl === $targetURL){
                 return $this->urls[0][$i];
             }
-            $i += 1;
+            ++$i;
         }
         try{
             $hrc = get_headers($targetURL);
+            
             if($hrc != FALSE){
-                return (int)substr($hrc[0], 9, 3);
+                return intval(substr($hrc[0],9,3));
             } else { return -1; }
-        } finally { return -1; }
+        } catch (Exception $e) { return -1; }
 
     }
 
@@ -76,28 +76,27 @@ class CheckedURLs {
             array_push($this->urls[1], $hostURL);
             array_push($this->urls[2], $targetURL);
             return TRUE;
-        } finally {return FALSE;}
+        } catch (Exception $e) {return FALSE;}
     }
 
     public function __toString(){
-        function fourohfourcounter($carry, $item){
-            if($item === 404){$carry += 1;}
-            return $carry;
-        }
-
         $tableContent = "";
         $i = 0;
+        $fourohfourCounter = 0;
         foreach($this->urls[0] as $u){
-            $tableContent."| {$this->urls[1][$i]} | {$this->urls[2][$i]}".
-                " | {$this->urls[0][$i]} |".PHP_EOL;
-            $i += 1;
+            $tableContent = $tableContent."| {$this->urls[1][$i]} |".
+                " {$this->urls[2][$i]} | {$this->urls[0][$i]} |".PHP_EOL;
+            if($this->urls[0][$i] == 404){++$fourohfourCounter;}
+            ++$i;
         }
+
         return "# CheckedURLs".PHP_EOL.PHP_EOL.
         "URLs checked: ".
-        count($this->urls[0])."\t\t".
+        $i."\t\t".
         "404 Errors found: ".
-        array_reduce($this->urls[0], "fourohfourcounter", 0).PHP_EOL.
+        $fourohfourCounter.PHP_EOL.
         "| Website Page | Target URL | HTTP Response Code |".PHP_EOL.
+        "| ------------ | ---------- | ------------------ |".PHP_EOL.
         $tableContent.PHP_EOL;
     }
 
@@ -112,7 +111,7 @@ class CheckedURLs {
     * @param String $sitemap
     * @param CheckedURLs $tested
     */
-    public static function linkExtract(String $sitemap, CheckedURLs $tested){
+    public static function linkChecker(String $sitemap, CheckedURLs $tested){
         libxml_use_internal_errors(true);
         $xml = simplexml_load_string(file_get_contents($sitemap));
         if($xml){
@@ -121,7 +120,7 @@ class CheckedURLs {
             foreach($xml->xpath("//sm:loc") as $loc){
                 $eLoc = explode("/", $loc);
                 if(strpos(end($eLoc), "sitemap.xml")){
-                    $tested = CheckedURLs::linkExtract($loc, $tested);
+                    $tested = CheckedURLs::linkChecker($loc, $tested);
                 } else {
                     $html = file_get_contents($loc);
                     $dom = new DOMDocument();
